@@ -24,8 +24,7 @@ export class ExtrasController {
 
   async listExtras(req: FastifyRequest, reply: FastifyReply) {
     const { month, year } = req.query as ListExtrasQuerySchema
-    const userId = req.user.sub
-    const result = await this.service.listExtras(month, year, userId)
+    const result = await this.service.listExtras(month, year)
     return reply.send(result)
   }
 }

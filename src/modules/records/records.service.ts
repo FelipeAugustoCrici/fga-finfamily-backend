@@ -9,12 +9,7 @@ export class RecordsService {
   private incomeService: IncomesService = new IncomesService()
   private expenseService: ExpensesService = new ExpensesService()
 
-  async deleteRecord(
-    type: 'salaries' | 'extras' | 'incomes' | 'expenses',
-    id: string,
-    userId: string,
-  ) {
-    // Aqui poderíamos validar se o id pertence ao userId antes de deletar
+  async deleteRecord(type: 'salaries' | 'extras' | 'incomes' | 'expenses', id: string) {
     switch (type) {
       case 'salaries':
         return this.salariesService.deleteSalary(id)
@@ -54,35 +49,45 @@ export class RecordsService {
           year,
         })
       case 'extras':
-        return this.extrasService.updateExtraIncome(id, {
-          description: data.description,
-          value: data.value,
-          date: dateObj,
-          personId: data.personId,
-          month,
-          year,
-        })
+        return this.extrasService.updateExtraIncome(
+          id,
+          {
+            description: data.description,
+            value: data.value,
+            date: dateObj,
+            personId: data.personId,
+            month,
+            year,
+          },
+          userId,
+        )
       case 'incomes':
-        return this.incomeService.updateIncome(id, {
-          description: data.description,
-          value: data.value,
-          date: dateObj,
-          personId: data.personId,
-          month,
-          year,
-          type: data.type,
-        })
+        return this.incomeService.updateIncome(
+          id,
+          {
+            description: data.description,
+            value: data.value,
+            date: dateObj,
+            personId: data.personId,
+            month,
+            year,
+            type: data.type,
+          },
+          userId,
+        )
       case 'expenses':
-        return this.expenseService.updateExpense(id, {
-          description: data.description,
-          value: data.value,
-          categoryName: data.categoryName,
-          categoryId: data.categoryId,
-          date: dateObj,
-          personId: data.personId,
-          month,
-          year,
-        })
+        return this.expenseService.updateExpense(
+          id,
+          {
+            description: data.description,
+            value: data.value,
+            categoryName: data.categoryName,
+            categoryId: data.categoryId,
+            date: data.date,
+            personId: data.personId,
+          },
+          userId,
+        )
       default:
         throw new Error('Tipo de registro inválido')
     }
