@@ -3,10 +3,10 @@ node_modules
 .env
 .env.local
 
-# Build output
-dist/
-/dist
-./dist
+# Build output - compiled JS files
+*.js
+!eslint.config.js
+!migrate-to-postgres.cjs
 
 # Prisma generated files
 /src/generated/prisma
