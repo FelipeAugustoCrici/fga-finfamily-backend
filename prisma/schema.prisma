@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  type      String    @default("expense")
+  familyId  String?
+  family    Family?   @relation(fields: [familyId], references: [id])
+  createdAt DateTime  @default(now())
+  expenses  Expense[]
+  budgets   Budget[]
+}
+
+model Family {
+  id         String     @id @default(uuid())
+  name       String
+  members    Person[]
+  categories Category[]
+  createdAt  DateTime   @default(now())
+}
+
+model Person {
+  id            String             @id @default(uuid())
+  name          String
+  phone         String?
+  email         String?
+  cpf           String?
+  birthDate     DateTime?
+  userId        String? // Cognito sub
+  familyId      String
+  family        Family             @relation(fields: [familyId], references: [id])
+  salaries      Salary[]
+  extraIncomes  ExtraIncome[]
+  incomes       Income[]
+  incomeSources IncomeSource[]
+  expenses      Expense[]
+  recurrings    RecurringExpense[]
+  createdAt     DateTime           @default(now())
+
+  @@index([userId])
+}
+
+model IncomeSource {
+  id          String    @id @default(uuid())
+  description String
+  value       Float
+  type        String // 'fixed', 'variable', 'temporary'
+  isRecurring Boolean   @default(true)
+  startDate   DateTime
+  endDate     DateTime?
+  active      Boolean   @default(true)
+  personId    String
+  person      Person    @relation(fields: [personId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  incomes     Income[]
+}
+
+model Income {
+  id          String        @id @default(uuid())
+  description String
+  value       Float
+  date        DateTime
+  month       Int
+  year        Int
+  type        String // 'fixed', 'variable', 'temporary'
+  personId    String
+  person      Person        @relation(fields: [personId], references: [id])
+  sourceId    String?
+  source      IncomeSource? @relation(fields: [sourceId], references: [id])
+  createdAt   DateTime      @default(now())
+  is_deleted  Boolean       @default(false)
+  dt_deleted  DateTime?
+
+  @@index([month, year])
+}
+
+model Salary {
+  id         String    @id @default(uuid())
+  personId   String
+  person     Person    @relation(fields: [personId], references: [id])
+  value      Float
+  month      Int
+  year       Int
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  is_deleted Boolean   @default(false)
+  dt_deleted DateTime?
+
+  @@unique([personId, month, year])
+}
+
+model ExtraIncome {
+  id          String    @id @default(uuid())
+  description String
+  value       Float
+  date        DateTime
+  month       Int
+  year        Int
+  personId    String
+  person      Person    @relation(fields: [personId], references: [id])
+  createdAt   DateTime  @default(now())
+  is_deleted  Boolean   @default(false)
+  dt_deleted  DateTime?
+
+  @@index([month, year])
+}
+
+model Expense {
+  id           String    @id @default(uuid())
+  description  String
+  value        Float
+  categoryName String
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  type         String // 'fixed' | 'variable'
+  date         DateTime
+  month        Int
+  year         Int
+  isCreditCard Boolean   @default(false)
+  creditCardId String?
+  personId     String
+  person       Person    @relation(fields: [personId], references: [id])
+  status       String    @default("PENDING") // 'PENDING' | 'PAID' | 'OVERDUE'
+  createdAt    DateTime  @default(now())
+  is_deleted   Boolean   @default(false)
+  dt_deleted   DateTime?
+
+  recurringId String?
+  recurring   RecurringExpense? @relation(fields: [recurringId], references: [id])
+
+  @@index([month, year])
+}
+
+model RecurringExpense {
+  id           String    @id @default(uuid())
+  description  String
+  value        Float
+  categoryName String
+  personId     String
+  person       Person    @relation(fields: [personId], references: [id])
+  startDate    DateTime
+  endDate      DateTime?
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  expenses     Expense[]
+}
+
+model Goal {
+  id           String    @id @default(uuid())
+  description  String
+  targetValue  Float
+  currentValue Float     @default(0)
+  deadline     DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model Budget {
+  id           String    @id @default(uuid())
+  categoryName String
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  limitValue   Float
+  month        Int
+  year         Int
+  createdAt    DateTime  @default(now())
+
+  @@unique([categoryName, month, year])
+}
+
+model CreditCard {
+  id         String   @id @default(uuid())
+  name       String
+  limit      Float
+  closingDay Int
+  dueDay     Int
+  createdAt  DateTime @default(now())
+}

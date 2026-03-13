@@ -1,0 +1,99 @@
+# ============================================
+# DOCKER COMPOSE - DESENVOLVIMENTO LOCAL
+# FinFamily Backend
+# ============================================
+
+version: '3.8'
+
+services:
+  # ============================================
+  # Aplicação Backend
+  # ============================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: finfamily-backend
+    restart: unless-stopped
+    ports:
+      - "3333:3333"
+    environment:
+      - NODE_ENV=production
+      - PORT=3333
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finfamily?schema=public
+      - COGNITO_USER_POOL_ID=${COGNITO_USER_POOL_ID}
+      - COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}
+      - COGNITO_REGION=${COGNITO_REGION:-us-east-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - finfamily-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3333/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ============================================
+  # Banco de Dados PostgreSQL
+  # ============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: finfamily-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=finfamily
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finfamily-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ============================================
+  # PGAdmin (Opcional - Interface gráfica)
+  # ============================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: finfamily-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@finfamily.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - finfamily-network
+    profiles:
+      - tools  # Só inicia com: docker-compose --profile tools up
+
+# ============================================
+# Volumes
+# ============================================
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+# ============================================
+# Networks
+# ============================================
+networks:
+  finfamily-network:
+    driver: bridge
