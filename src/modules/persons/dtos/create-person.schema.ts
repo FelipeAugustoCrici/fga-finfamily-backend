@@ -7,7 +7,7 @@ export const createPersonSchema = z.object({
   email: z.email().optional(),
   cpf: z.string().optional(),
   birthDate: z.string().optional(),
-  userId: z.string().min(1), // Cognito ID/sub
 })
 
 export type CreatePersonInput = z.infer<typeof createPersonSchema>
+export type CreatePersonData = CreatePersonInput & { userId: string }

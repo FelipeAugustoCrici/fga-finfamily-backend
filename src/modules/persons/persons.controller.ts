@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { CreatePersonInput } from './dtos/create-person.schema'
+import { CreatePersonInput, CreatePersonData } from './dtos/create-person.schema'
 import { UpdatePersonInput } from './dtos/update-person.schema'
 import { PersonsService } from './persons.service'
 
@@ -7,7 +7,9 @@ export class PersonsController {
   private service: PersonsService = new PersonsService()
 
   async createPerson(req: FastifyRequest, reply: FastifyReply) {
-    const result = await this.service.createPerson(req.body as CreatePersonInput)
+    const userId = req.user.sub
+    const data: CreatePersonData = { ...(req.body as CreatePersonInput), userId }
+    const result = await this.service.createPerson(data)
     return reply.status(201).send(result)
   }
 

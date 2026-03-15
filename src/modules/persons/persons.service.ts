@@ -1,11 +1,11 @@
 import { PersonsRepository } from './persons.repository'
 import { UpdatePersonInput } from '@/modules/persons/dtos/update-person.schema'
-import { CreatePersonInput } from './dtos/create-person.schema'
+import { CreatePersonInput, CreatePersonData } from './dtos/create-person.schema'
 
 export class PersonsService {
   private repository: PersonsRepository = new PersonsRepository()
 
-  async createPerson(data: CreatePersonInput) {
+  async createPerson(data: CreatePersonData) {
     return this.repository.createPerson(data)
   }
 

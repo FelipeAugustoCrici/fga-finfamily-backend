@@ -20,10 +20,7 @@ app.register(cors, {
 })
 
 app.addHook('onRequest', async (req, reply) => {
-  if (
-    (req.method === 'POST' && req.url === '/finance/persons') ||
-    (req.method === 'POST' && req.url === '/finance/families')
-  ) {
+  if (req.method === 'POST' && req.url === '/finance/families') {
     return
   }
 
