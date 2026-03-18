@@ -163,12 +163,27 @@ model RecurringExpense {
 }
 
 model Goal {
-  id           String    @id @default(uuid())
-  description  String
-  targetValue  Float
-  currentValue Float     @default(0)
-  deadline     DateTime?
-  createdAt    DateTime  @default(now())
+  id            String             @id @default(uuid())
+  description   String
+  type          String             @default("savings") // savings | debt | purchase | investment
+  targetValue   Float
+  currentValue  Float              @default(0)
+  deadline      DateTime?
+  familyId      String?
+  personId      String?
+  status        String             @default("active") // active | completed | archived
+  createdAt     DateTime           @default(now())
+  contributions GoalContribution[]
+}
+
+model GoalContribution {
+  id          String   @id @default(uuid())
+  goalId      String
+  goal        Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  value       Float
+  date        DateTime @default(now())
+  observation String?
+  createdAt   DateTime @default(now())
 }
 
 model Budget {

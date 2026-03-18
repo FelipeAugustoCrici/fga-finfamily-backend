@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { CreateGoalInput } from './dtos/create-goal.schema'
+import { CreateGoalInput, AddContributionInput } from './dtos/create-goal.schema'
 import { GoalsService } from './goals.service'
 
 export class GoalsController {
@@ -11,7 +11,8 @@ export class GoalsController {
   }
 
   async getGoals(req: FastifyRequest, reply: FastifyReply) {
-    const result = await this.service.listGoals()
+    const { familyId } = req.query as { familyId?: string }
+    const result = await this.service.listGoals(familyId)
     return reply.send(result)
   }
 
@@ -32,5 +33,11 @@ export class GoalsController {
     const { currentValue } = req.body as { currentValue: number }
     const result = await this.service.updateGoal(id, currentValue)
     return reply.send(result)
+  }
+
+  async addContribution(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string }
+    const result = await this.service.addContribution(id, req.body as AddContributionInput)
+    return reply.status(201).send(result)
   }
 }

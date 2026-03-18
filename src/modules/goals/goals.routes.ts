@@ -6,7 +6,7 @@ import {
   RawRequestDefaultExpression,
 } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
-import { createGoalSchema } from './dtos/create-goal.schema'
+import { createGoalSchema, addContributionSchema } from './dtos/create-goal.schema'
 import { GoalsController } from './goals.controller'
 
 type FastifyZodInstance = FastifyInstance<
@@ -27,4 +27,7 @@ export function goalsRoutes(app: FastifyZodInstance) {
   app.get('/:id', (req, reply) => controller.getGoalById(req, reply))
   app.put('/:id', (req, reply) => controller.updateGoal(req, reply))
   app.delete('/:id', (req, reply) => controller.deleteGoal(req, reply))
+  app.post('/:id/contributions', { schema: { body: addContributionSchema } }, (req, reply) =>
+    controller.addContribution(req, reply),
+  )
 }
