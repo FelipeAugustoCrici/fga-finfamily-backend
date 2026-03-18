@@ -12,8 +12,18 @@ export class CategoriesController {
   }
 
   async listCategories(request: FastifyRequest, reply: FastifyReply) {
-    const { familyId } = request.query as { familyId?: string }
-    const result = await this.service.listCategories(familyId)
+    const { familyId, type, page, limit } = request.query as {
+      familyId?: string
+      type?: string
+      page?: string
+      limit?: string
+    }
+    const result = await this.service.listCategories(
+      familyId,
+      type,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+    )
     return reply.send(result)
   }
 

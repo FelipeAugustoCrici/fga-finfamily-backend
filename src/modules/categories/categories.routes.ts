@@ -27,7 +27,16 @@ export async function categoriesRoutes(app: FastifyZodInstance) {
   )
   app.get(
     '/',
-    { schema: { querystring: z.object({ familyId: z.string().uuid().optional() }) } },
+    {
+      schema: {
+        querystring: z.object({
+          familyId: z.string().uuid().optional(),
+          type: z.enum(['expense', 'income']).optional(),
+          page: z.coerce.number().int().positive().optional(),
+          limit: z.coerce.number().int().positive().optional(),
+        }),
+      },
+    },
     (req, reply) => controller.listCategories(req, reply),
   )
   app.delete('/:id', { schema: { params: paramIdSchema } }, (req, reply) =>

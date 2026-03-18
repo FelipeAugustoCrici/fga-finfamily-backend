@@ -7,8 +7,8 @@ export class CategoriesService {
     return this.repository.createCategory(data)
   }
 
-  async listCategories(familyId?: string) {
-    return this.repository.listCategories(familyId)
+  async listCategories(familyId?: string, type?: string, page = 1, limit = 10) {
+    return this.repository.listCategories(familyId, type, page, limit)
   }
 
   async deleteCategory(id: string) {
