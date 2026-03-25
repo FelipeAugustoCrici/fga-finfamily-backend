@@ -54,7 +54,7 @@ export class TelegramService {
 
     const link = await this.repo.findLinkByTelegramUserId(telegramUserId)
     if (!link) {
-      await sendMessage(chatId, '⚠️ Sua conta ainda não está vinculada.\n\nAcesse o sistema, gere um código de ativação e envie <b>/start CODIGO</b> aqui.')
+      await sendMessage(chatId, `Recebi sua mensagem: ${text}\n\n⚠️ Sua conta ainda não está vinculada.\n\nAcesse o sistema, gere um código de ativação e envie <b>/start CODIGO</b> aqui.`)
       return
     }
 

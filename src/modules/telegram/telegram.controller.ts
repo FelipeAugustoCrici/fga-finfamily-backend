@@ -6,14 +6,26 @@ export class TelegramController {
   private service = new TelegramService()
 
   async webhook(req: FastifyRequest, reply: FastifyReply) {
-    const secret = req.headers['x-telegram-bot-api-secret-token']
-    if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
-      return reply.status(403).send({ message: 'Forbidden' })
+    const secret = process.env.TELEGRAM_WEBHOOK_SECRET
+
+    if (secret) {
+      const incoming = req.headers['x-telegram-bot-api-secret-token']
+      if (incoming !== secret) {
+        req.log.warn({ incoming }, 'Telegram webhook: secret inválido')
+        return reply.status(403).send({ message: 'Forbidden' })
+      }
     }
 
     const update = req.body as TelegramUpdate
-    await this.service.handleUpdate(update)
-    return reply.status(200).send({ ok: true })
+    req.log.info({ update_id: update.update_id }, 'Telegram update recebido')
+
+    reply.status(200).send({ ok: true })
+
+    try {
+      await this.service.handleUpdate(update)
+    } catch (err) {
+      req.log.error(err, 'Erro ao processar update do Telegram')
+    }
   }
 
   async generateCode(req: FastifyRequest, reply: FastifyReply) {
