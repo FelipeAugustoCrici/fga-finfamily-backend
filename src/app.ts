@@ -47,6 +47,11 @@ app.register(telegramRoutes, { prefix: '/telegram' })
 
 app.get('/', async (_, reply) => reply.send({ status: 'ok' }))
 
+app.get('/telegram/test', async (_, reply) => {
+  console.log('[TEST] rota de teste chamada em:', new Date().toISOString())
+  return reply.send({ ok: true, time: new Date().toISOString() })
+})
+
 app.setErrorHandler((error, _, reply) => {
   app.log.error(error)
 
