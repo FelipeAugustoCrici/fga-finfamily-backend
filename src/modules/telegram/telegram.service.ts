@@ -249,6 +249,8 @@ export class TelegramService {
         return
       }
 
+      console.log(`[TELEGRAM] persistRecord — userId: ${userId} | personId: ${person.id} | personName: ${person.name}`)
+
       const today = new Date().toISOString().split('T')[0]
 
       if (parsed.type === 'expense') {
