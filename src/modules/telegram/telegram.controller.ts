@@ -11,17 +11,18 @@ export class TelegramController {
     console.log('[TELEGRAM] Body:', JSON.stringify(req.body, null, 2))
 
     const secret = process.env.TELEGRAM_WEBHOOK_SECRET
-    console.log('[TELEGRAM] TELEGRAM_WEBHOOK_SECRET configurado:', !!secret)
+    console.log('[TELEGRAM] TELEGRAM_WEBHOOK_SECRET configurado:', !!secret, '| valor:', secret ?? 'VAZIO')
     console.log('[TELEGRAM] TELEGRAM_BOT_TOKEN configurado:', !!process.env.TELEGRAM_BOT_TOKEN)
 
     if (secret) {
       const incoming = req.headers['x-telegram-bot-api-secret-token']
-      console.log('[TELEGRAM] Secret recebido:', incoming)
-      console.log('[TELEGRAM] Secret esperado:', secret)
+      console.log('[TELEGRAM] Secret recebido no header:', incoming ?? 'AUSENTE')
       if (incoming !== secret) {
         console.log('[TELEGRAM] ❌ Secret inválido — retornando 403')
         return reply.status(403).send({ message: 'Forbidden' })
       }
+    } else {
+      console.log('[TELEGRAM] Secret não configurado — pulando validação')
     }
 
     const update = req.body as TelegramUpdate

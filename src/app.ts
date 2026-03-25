@@ -45,6 +45,8 @@ app.addHook('onRequest', async (req, reply) => {
 app.register(financeRoutes, { prefix: '/finance' })
 app.register(telegramRoutes, { prefix: '/telegram' })
 
+app.get('/', async (_, reply) => reply.send({ status: 'ok' }))
+
 app.setErrorHandler((error, _, reply) => {
   app.log.error(error)
 
