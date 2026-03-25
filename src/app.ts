@@ -5,6 +5,7 @@ import { ZodTypeProvider, validatorCompiler, serializerCompiler } from 'fastify-
 import { authMiddleware } from './shared/auth/auth.middleware'
 
 import { financeRoutes } from '@/modules/finance'
+import { telegramRoutes } from '@/modules/telegram/telegram.routes'
 
 export const app = fastify({
   logger: true,
@@ -24,16 +25,22 @@ app.addHook('onRequest', async (req, reply) => {
     return
   }
 
+  if (req.method === 'POST' && req.url === '/telegram/webhook') {
+    return
+  }
+
   if (
     req.url.startsWith('/finance') ||
     req.url.startsWith('/me') ||
-    req.url.startsWith('/persons/me')
+    req.url.startsWith('/persons/me') ||
+    req.url.startsWith('/telegram')
   ) {
     await authMiddleware(req, reply)
   }
 })
 
 app.register(financeRoutes, { prefix: '/finance' })
+app.register(telegramRoutes, { prefix: '/telegram' })
 
 app.setErrorHandler((error, _, reply) => {
   app.log.error(error)

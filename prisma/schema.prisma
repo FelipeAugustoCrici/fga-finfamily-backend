@@ -348,3 +348,40 @@ model ExpenseAdjustment {
 
   @@index([familyId, month, year])
 }
+
+model TelegramLink {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  telegramUserId   String   @unique
+  telegramChatId   String
+  telegramUsername String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@index([telegramUserId])
+}
+
+model TelegramActivationCode {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  code      String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([code])
+}
+
+model TelegramPendingAction {
+  id             String   @id @default(uuid())
+  userId         String
+  telegramChatId String
+  actionType     String
+  payload        Json
+  status         String   @default("pending")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([telegramChatId, status])
+}
