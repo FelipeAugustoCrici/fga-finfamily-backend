@@ -22,7 +22,7 @@ export class PersonsRepository {
 
   async getPersonByUserId(userId: string) {
     return prisma.person.findFirst({
-      where: { userId, hasAccess: true },
+      where: { userId },
       include: { family: true },
     })
   }

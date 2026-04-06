@@ -54,6 +54,8 @@ export class PersonsService {
     const userPerson = await this.repository.getPersonByUserId(userId)
     if (!userPerson || !userPerson.familyId) return false
 
+    console.log(`[VALIDATE] personId: ${personId} familyId: ${person.familyId} | userPerson: ${userPerson.id} familyId: ${userPerson.familyId} | userId: ${userId}`)
+
     return person.familyId === userPerson.familyId
   }
 
