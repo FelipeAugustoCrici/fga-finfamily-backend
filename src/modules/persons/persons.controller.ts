@@ -30,4 +30,10 @@ export class PersonsController {
     await this.service.deletePerson(id)
     return reply.status(204).send()
   }
+
+  async resendInvite(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string }
+    await this.service.resendInvite(id)
+    return reply.send({ message: 'Convite reenviado com sucesso' })
+  }
 }

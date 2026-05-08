@@ -31,4 +31,6 @@ export async function personsRoutes(app: FastifyZodInstance) {
   )
   
   app.delete('/:id', (req, reply) => controller.deletePerson(req, reply))
+
+  app.post('/:id/resend-invite', (req, reply) => controller.resendInvite(req, reply))
 }

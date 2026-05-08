@@ -47,6 +47,22 @@ export class PersonsService {
     return this.repository.deletePerson(id)
   }
 
+  async resendInvite(personId: string): Promise<void> {
+    const person = await this.repository.getPersonWithFamily(personId)
+
+    if (!person) {
+      throw new Error('Membro não encontrado')
+    }
+    if (!person.hasAccess) {
+      throw new Error('Este membro não possui acesso à plataforma')
+    }
+    if (!person.email) {
+      throw new Error('Este membro não possui e-mail cadastrado')
+    }
+
+    await cognitoService.resendInvite(person.email, person.name)
+  }
+
   async validatePersonBelongsToUserFamily(personId: string, userId: string): Promise<boolean> {
     const person = await this.repository.getPersonWithFamily(personId)
     if (!person || !person.familyId) return false
