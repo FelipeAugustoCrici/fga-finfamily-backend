@@ -15,9 +15,21 @@ app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
 app.register(cors, {
-  origin: '*',
+  origin: (origin, cb) => {
+    const allowed = (process.env.ALLOWED_ORIGINS || 'https://fga-finfamily.vercel.app')
+      .split(',')
+      .map((o) => o.trim())
+
+    // Permite requisições sem origin (ex: mobile, Postman, server-to-server)
+    if (!origin || allowed.includes('*') || allowed.includes(origin)) {
+      cb(null, true)
+    } else {
+      cb(new Error(`CORS: origin ${origin} not allowed`), false)
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
 })
 
 app.addHook('onRequest', async (req, reply) => {
