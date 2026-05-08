@@ -38,5 +38,8 @@ COPY prisma ./prisma/
 RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
+COPY scripts/start.sh ./start.sh
 
-CMD ["node", "dist/server.js"]
+RUN chmod +x ./start.sh
+
+CMD ["./start.sh"]
