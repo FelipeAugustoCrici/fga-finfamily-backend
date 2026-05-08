@@ -39,4 +39,4 @@ RUN npx prisma generate
 
 COPY --from=builder /app/dist ./dist
 
-CMD ["sh", "-c", "npx prisma migrate deploy || true && node dist/server.js"]
+CMD ["node", "dist/server.js"]
