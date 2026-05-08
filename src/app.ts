@@ -35,6 +35,11 @@ app.register(cors, {
 app.addHook('onRequest', async (req, reply) => {
   console.log(`[APP] ${req.method} ${req.url}`)
 
+  // Preflight OPTIONS nunca precisa de auth — CORS plugin responde sozinho
+  if (req.method === 'OPTIONS') {
+    return
+  }
+
   if (req.method === 'POST' && req.url === '/finance/families') {
     return
   }
