@@ -24,7 +24,7 @@ WORKDIR /app
 RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=3333
 
 COPY package*.json ./
 
