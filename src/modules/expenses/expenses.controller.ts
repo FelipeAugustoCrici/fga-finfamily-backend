@@ -21,9 +21,11 @@ export class ExpensesController {
   }
 
   async listExpenses(req: FastifyRequest, reply: FastifyReply) {
-    const { month, year, familyId, status, page, limit } = req.query as ListExpensesQuery
+    const { month, year, familyId, status, page, limit, search, categoryId, personId, tipo, valorMin, valorMax, dataInicio, dataFim, ordenacao } = req.query as ListExpensesQuery
     const userId = req.user.sub
-    const result = await this.service.listExpenses(month, year, userId, familyId, status, page, limit)
+    const result = await this.service.listExpenses(month, year, userId, familyId, status, page, limit, {
+      search, categoryId, personId, tipo, valorMin, valorMax, dataInicio, dataFim, ordenacao,
+    })
     return reply.send(result)
   }
 

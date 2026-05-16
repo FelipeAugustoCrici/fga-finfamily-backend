@@ -4,9 +4,28 @@ import { CreateFamilyInput, createFamilySchema } from '@/modules/families/dtos/c
 import { CreateIncomeInput, createIncomeSchema } from '@/modules/incomes/dtos'
 import { CreateExpenseInput, createExpenseSchema } from '@/modules/expenses/dtos'
 import { RecordsService } from './records.service'
+import { RecordsResumoService } from './records-resumo.service'
+import { RecordsResumoQuery } from './dtos/records-resumo-query.schema'
 
 export class RecordsController {
   private service: RecordsService = new RecordsService()
+  private resumoService: RecordsResumoService = new RecordsResumoService()
+
+  async getResumo(req: FastifyRequest, reply: FastifyReply) {
+    const { mes, ano, familiaId, responsavelId, categoriaId, status } =
+      req.query as RecordsResumoQuery
+    const userId = req.user.sub
+    const result = await this.resumoService.getResumo({
+      mes,
+      ano,
+      familiaId,
+      userId,
+      responsavelId,
+      categoriaId,
+      status,
+    })
+    return reply.send(result)
+  }
 
   async deleteRecord(req: FastifyRequest, reply: FastifyReply) {
     const { type, id } = req.params as DeleteRecordsParams

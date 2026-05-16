@@ -99,17 +99,27 @@ export class ExpensesService {
     status?: string,
     page: number = 1,
     limit: number = 10,
+    filters?: {
+      search?: string
+      categoryId?: string
+      personId?: string
+      tipo?: string
+      valorMin?: number
+      valorMax?: number
+      dataInicio?: string
+      dataFim?: string
+      ordenacao?: string
+    },
   ) {
     if (familyId) {
       const family = await this.familiesService.getFamily(familyId, userId)
-
       if (!family) throw new Error('Acesso negado à família')
 
       await Promise.all([
         this.recurringExpensesService.processRecurringExpenses(familyId, month, year),
         this.incomesService.processRecurringIncomes(familyId, month, year),
       ])
-      return this.repository.getExpensesByFamily(familyId, month, year, status, page, limit)
+      return this.repository.getExpensesByFamily(familyId, month, year, status, page, limit, filters)
     }
 
     return this.repository.getExpensesByUserId(userId, month, year, status, page, limit)
