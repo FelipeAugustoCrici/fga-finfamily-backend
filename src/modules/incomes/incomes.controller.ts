@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { CreateIncomeInput, ListIncomesQuery } from './dtos'
+import { CreateIncomeInput, ListIncomesQuery, UpdateIncomeInput } from './dtos'
 import { IncomesService } from '@/modules/incomes/incomes.service'
 import { ParamIdInput } from '@/shared/schemas/param-id.schema'
 
@@ -27,5 +27,19 @@ export class IncomesController {
     const { id } = req.params as ParamIdInput
     const result = await this.service.getIncomeById(id, userId)
     return reply.send(result)
+  }
+
+  async updateIncome(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user.sub
+    const { id } = req.params as ParamIdInput
+    const result = await this.service.updateIncome(id, req.body as UpdateIncomeInput, userId)
+    return reply.send(result)
+  }
+
+  async deleteIncome(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user.sub
+    const { id } = req.params as ParamIdInput
+    await this.service.deleteIncome(id, userId)
+    return reply.status(204).send()
   }
 }

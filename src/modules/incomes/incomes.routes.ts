@@ -7,7 +7,7 @@ import {
 } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { IncomesController } from './incomes.controller'
-import { createIncomeSchema, listIncomesQuerySchema } from './dtos'
+import { createIncomeSchema, listIncomesQuerySchema, updateIncomeSchema } from './dtos'
 import { paramIdSchema } from '@/shared/schemas/param-id.schema'
 
 type FastifyZodInstance = FastifyInstance<
@@ -30,5 +30,13 @@ export async function incomesRoutes(app: FastifyZodInstance) {
 
   app.get('/:id', { schema: { params: paramIdSchema } }, (req, reply) =>
     controller.getIncomeById(req, reply),
+  )
+
+  app.put('/:id', { schema: { body: updateIncomeSchema, params: paramIdSchema } }, (req, reply) =>
+    controller.updateIncome(req, reply),
+  )
+
+  app.delete('/:id', { schema: { params: paramIdSchema } }, (req, reply) =>
+    controller.deleteIncome(req, reply),
   )
 }

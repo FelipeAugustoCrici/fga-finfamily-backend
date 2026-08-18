@@ -18,6 +18,22 @@ export class ExtrasRepository {
     })
   }
 
+  async getExtraIncomeById(id: string, userId: string) {
+    const extra = await this.repository.findUnique({
+      where: { id },
+      include: { person: { include: { family: { include: { members: true } } } } },
+    })
+
+    if (!extra) return null
+
+    const isOwner = extra.person.userId === userId
+    const isFamilyMember = extra.person.family?.members?.some((m) => m.userId === userId)
+
+    if (!isOwner && !isFamilyMember) return null
+
+    return extra
+  }
+
   async getExtras(month: number, year: number) {
     return this.repository.findMany({
       where: { month, year, is_deleted: false },

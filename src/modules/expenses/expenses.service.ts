@@ -138,6 +138,12 @@ export class ExpensesService {
   }
 
   async updateExpense(id: string, data: UpdateExpenseInput, userId: string) {
+    // Validar se o registro pertence à família do usuário (não apenas o personId enviado)
+    const existing = await this.repository.getExpenseById(id, userId)
+    if (!existing) {
+      throw new Error('Despesa não encontrada ou você não tem permissão para editá-la')
+    }
+
     // Validar se a pessoa pertence à família do usuário
     if (data.personId) {
       const isValid = await this.personsService.validatePersonBelongsToUserFamily(
@@ -281,7 +287,12 @@ export class ExpensesService {
     return this.repository.getExpenseByIdRaw(expenseId)
   }
 
-  async deleteExpense(id: string) {
+  async deleteExpense(id: string, userId: string) {
+    const existing = await this.repository.getExpenseById(id, userId)
+    if (!existing) {
+      throw new Error('Despesa não encontrada ou você não tem permissão para excluí-la')
+    }
+
     return this.repository.deleteExpense(id)
   }
 }

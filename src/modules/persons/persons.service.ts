@@ -67,12 +67,11 @@ export class PersonsService {
     const person = await this.repository.getPersonWithFamily(personId)
     if (!person || !person.familyId) return false
 
-    const userPerson = await this.repository.getPersonByUserId(userId)
-    if (!userPerson || !userPerson.familyId) return false
-
-    console.log(`[VALIDATE] personId: ${personId} familyId: ${person.familyId} | userPerson: ${userPerson.id} familyId: ${userPerson.familyId} | userId: ${userId}`)
-
-    return person.familyId === userPerson.familyId
+    // Um userId pode ter mais de um Person (ex.: dados legados/reconvites), então
+    // checamos se QUALQUER pessoa desse usuário pertence à mesma família do registro,
+    // em vez de confiar em uma única linha (não determinístico) via findFirst.
+    const userPersons = await this.repository.getPersonsByUserId(userId)
+    return userPersons.some((userPerson) => userPerson.familyId === person.familyId)
   }
 
   async getPersonWithFamily(personId: string) {

@@ -37,13 +37,17 @@ export class ExtrasService {
     data: Partial<{
       description: string
       value: number
-      date: Date
-      month: number
-      year: number
+      date: string
       personId: string
     }>,
     userId: string,
   ) {
+    // Validar se o registro pertence à família do usuário (não apenas o personId enviado)
+    const existing = await this.repository.getExtraIncomeById(id, userId)
+    if (!existing) {
+      throw new Error('Renda extra não encontrada ou você não tem permissão para editá-la')
+    }
+
     // Validar se a pessoa pertence à família do usuário
     if (data.personId) {
       const isValid = await this.personsService.validatePersonBelongsToUserFamily(
@@ -56,7 +60,24 @@ export class ExtrasService {
       }
     }
 
-    return this.repository.updateExtraIncome(id, data)
+    const updateData: Partial<{
+      description: string
+      value: number
+      date: Date
+      month: number
+      year: number
+      personId: string
+    }> = { ...data, date: undefined }
+
+    if (data.date) {
+      const dateObj = new Date(data.date)
+      const dateParts = data.date.split('T')[0].split('-')
+      updateData.date = dateObj
+      updateData.month = dateParts.length === 3 ? parseInt(dateParts[1]) : dateObj.getUTCMonth() + 1
+      updateData.year = dateParts.length === 3 ? parseInt(dateParts[0]) : dateObj.getUTCFullYear()
+    }
+
+    return this.repository.updateExtraIncome(id, updateData)
   }
 
   async listExtras(month: number, year: number) {
@@ -67,7 +88,12 @@ export class ExtrasService {
     return this.repository.getExtrasByFamily(familyId, month, year)
   }
 
-  async deleteExtraIncome(id: string) {
+  async deleteExtraIncome(id: string, userId: string) {
+    const existing = await this.repository.getExtraIncomeById(id, userId)
+    if (!existing) {
+      throw new Error('Renda extra não encontrada ou você não tem permissão para excluí-la')
+    }
+
     return this.repository.deleteExtraIncome(id)
   }
 }

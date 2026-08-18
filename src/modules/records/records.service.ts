@@ -9,16 +9,16 @@ export class RecordsService {
   private incomeService: IncomesService = new IncomesService()
   private expenseService: ExpensesService = new ExpensesService()
 
-  async deleteRecord(type: 'salaries' | 'extras' | 'incomes' | 'expenses', id: string) {
+  async deleteRecord(type: 'salaries' | 'extras' | 'incomes' | 'expenses', id: string, userId: string) {
     switch (type) {
       case 'salaries':
         return this.salariesService.deleteSalary(id)
       case 'extras':
-        return this.extrasService.deleteExtraIncome(id)
+        return this.extrasService.deleteExtraIncome(id, userId)
       case 'incomes':
-        return this.incomeService.deleteIncome(id)
+        return this.incomeService.deleteIncome(id, userId)
       case 'expenses':
-        return this.expenseService.deleteExpense(id)
+        return this.expenseService.deleteExpense(id, userId)
       default:
         throw new Error('Tipo de registro inválido')
     }
@@ -54,10 +54,8 @@ export class RecordsService {
           {
             description: data.description,
             value: data.value,
-            date: dateObj,
+            date: data.date,
             personId: data.personId,
-            month,
-            year,
           },
           userId,
         )
@@ -67,10 +65,8 @@ export class RecordsService {
           {
             description: data.description,
             value: data.value,
-            date: dateObj,
+            date: data.date,
             personId: data.personId,
-            month,
-            year,
             type: data.type,
           },
           userId,

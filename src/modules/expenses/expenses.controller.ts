@@ -77,8 +77,9 @@ export class ExpensesController {
   }
 
   async deleteExpense(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user.sub
     const { id } = req.params as ParamIdInput
-    await this.service.deleteExpense(id)
+    await this.service.deleteExpense(id, userId)
     return reply.status(204).send()
   }
 }

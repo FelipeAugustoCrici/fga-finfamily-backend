@@ -27,6 +27,13 @@ export class PersonsRepository {
     })
   }
 
+  async getPersonsByUserId(userId: string) {
+    return prisma.person.findMany({
+      where: { userId },
+      include: { family: true },
+    })
+  }
+
   async updatePerson(userId: string, data: UpdatePersonInput) {
     const person = await this.getPersonByUserId(userId)
 
