@@ -143,8 +143,15 @@ model Expense {
   date            DateTime
   month           Int
   year            Int
+  paymentMethod   String    @default("account") // account | credit_card
   isCreditCard    Boolean   @default(false)
   creditCardId    String?
+  purchaseId      String?
+  purchase        CreditCardPurchase? @relation(fields: [purchaseId], references: [id])
+  installmentId   String?   @unique
+  installment     CreditCardInstallment? @relation(fields: [installmentId], references: [id])
+  creditCardInvoiceId String? @unique
+  creditCardInvoice   CreditCardInvoice? @relation(fields: [creditCardInvoiceId], references: [id])
   personId        String
   person          Person    @relation(fields: [personId], references: [id])
   status          String    @default("PENDING")
@@ -169,6 +176,7 @@ model Expense {
   @@index([is_deleted, month, year])
   @@index([creditCardId])
   @@index([originExpenseId])
+  @@index([purchaseId])
 }
 
 model ExpensePayment {
@@ -289,6 +297,7 @@ model CreditCardInvoice {
   createdAt      DateTime                @default(now())
   updatedAt      DateTime                @updatedAt
   installments   CreditCardInstallment[]
+  expense        Expense?
 
   @@unique([creditCardId, referenceMonth, referenceYear])
   @@index([creditCardId])
@@ -315,6 +324,7 @@ model CreditCardPurchase {
   createdAt    DateTime                @default(now())
   updatedAt    DateTime                @updatedAt
   parcels      CreditCardInstallment[]
+  expenses     Expense[]
 
   @@index([creditCardId])
   @@index([familyId])
@@ -336,6 +346,7 @@ model CreditCardInstallment {
   status            String             @default("pending")
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  expense           Expense?
 
   @@index([purchaseId])
   @@index([invoiceId])

@@ -6,11 +6,13 @@ import { IncomesService } from '@/modules/incomes/incomes.service'
 import { UpdateExpenseInput } from '@/modules/expenses/dtos'
 import { FamiliesService } from '@/modules/families/families.service'
 import { PersonsService } from '@/modules/persons/persons.service'
+import { CreditCardsService } from '@/modules/credit-cards/credit-cards.service'
 
 export class ExpensesService {
   private incomesService: IncomesService = new IncomesService()
   private familiesService: FamiliesService = new FamiliesService()
   private personsService: PersonsService = new PersonsService()
+  private creditCardsService: CreditCardsService = new CreditCardsService()
   private recurringExpensesService: RecurringExpensesService = new RecurringExpensesService()
   private repository: ExpensesRepository = new ExpensesRepository()
   private recurringRepository: RecurringExpensesRepository = new RecurringExpensesRepository()
@@ -24,6 +26,9 @@ export class ExpensesService {
     date: string
     personId: string
     status?: string
+    paymentMethod?: string
+    creditCardId?: string
+    installments?: number
     isRecurring?: boolean
     durationMonths?: number
     userId: string
@@ -37,6 +42,38 @@ export class ExpensesService {
 
     if (!isValid) {
       throw new Error('Pessoa inválida ou não pertence à sua família')
+    }
+
+    if (data.paymentMethod === 'credit_card') {
+      if (data.isRecurring) {
+        throw new Error('Lançamentos pagos no cartão de crédito não podem ser recorrentes')
+      }
+      if (!data.creditCardId) {
+        throw new Error('Selecione um cartão de crédito')
+      }
+
+      const person = await this.personsService.getPersonWithFamily(data.personId)
+      if (!person || !person.familyId) {
+        throw new Error('Responsável não possui família associada')
+      }
+
+      // Cria a compra, as parcelas nas faturas corretas e um Expense por
+      // parcela — mesmo caminho usado pela tela de Cartões.
+      return this.creditCardsService.createPurchase(
+        {
+          creditCardId: data.creditCardId,
+          familyId: person.familyId,
+          ownerId: data.personId,
+          categoryId: data.categoryId,
+          categoryName: data.categoryName,
+          description: data.description,
+          purchaseDate: data.date,
+          totalAmount: data.value,
+          installments: data.installments ?? 1,
+          isShared: data.isShared ?? true,
+        },
+        data.userId,
+      )
     }
 
     const dateObj = new Date(data.date)
@@ -144,6 +181,18 @@ export class ExpensesService {
       throw new Error('Despesa não encontrada ou você não tem permissão para editá-la')
     }
 
+    // Lançamentos pagos no cartão (parcela ou fatura agregada) têm valor,
+    // data e responsável definidos pela compra/fatura: só descrição e
+    // categoria podem ser editadas. Mudar o resto exige excluir e lançar de
+    // novo (parcela) ou não se aplica (fatura).
+    if (existing.purchaseId || existing.creditCardInvoiceId) {
+      return this.repository.updateExpense(id, {
+        description: data.description,
+        categoryName: data.categoryName,
+        categoryId: data.categoryId,
+      })
+    }
+
     // Validar se a pessoa pertence à família do usuário
     if (data.personId) {
       const isValid = await this.personsService.validatePersonBelongsToUserFamily(
@@ -176,6 +225,26 @@ export class ExpensesService {
   }
 
   async updateStatus(id: string, status: string) {
+    const expense = await this.repository.getExpenseByIdRaw(id)
+    if (!expense) throw new Error('Despesa não encontrada')
+
+    // Parcela de compra no cartão: já nasce paga, não muda de status por aqui.
+    if (expense.purchaseId) {
+      throw new Error(
+        'Esta parcela já está paga — foi quitada com o cartão no momento da compra.',
+      )
+    }
+
+    // Lançamento agregado da fatura: só aceita virar PAID, e isso precisa
+    // passar pelo mesmo caminho da tela de Cartões (recompõe limite e fatura).
+    if (expense.creditCardInvoiceId) {
+      if (status !== 'PAID') {
+        throw new Error('A fatura só pode ser marcada como paga, não como pendente ou atrasada.')
+      }
+      await this.creditCardsService.payInvoice(expense.creditCardInvoiceId, expense.value)
+      return this.repository.getExpenseByIdRaw(id)
+    }
+
     return this.repository.updateStatus(id, status)
   }
 
@@ -291,6 +360,20 @@ export class ExpensesService {
     const existing = await this.repository.getExpenseById(id, userId)
     if (!existing) {
       throw new Error('Despesa não encontrada ou você não tem permissão para excluí-la')
+    }
+
+    // Lançamento vindo de uma compra no cartão: exclui a compra inteira
+    // (todas as parcelas), não apenas esta linha.
+    if (existing.purchaseId) {
+      return this.creditCardsService.deletePurchase(existing.purchaseId, userId)
+    }
+
+    // Lançamento agregado da fatura: não faz sentido excluir uma fatura —
+    // ou ela é paga, ou fica pendente até você pagar.
+    if (existing.creditCardInvoiceId) {
+      throw new Error(
+        'Não é possível excluir a fatura. Marque como paga quando quitar o cartão.',
+      )
     }
 
     return this.repository.deleteExpense(id)

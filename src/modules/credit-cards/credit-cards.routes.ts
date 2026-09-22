@@ -36,6 +36,7 @@ export async function creditCardsRoutes(app: FastifyZodInstance) {
     controller.createPurchase(req, reply),
   )
   app.get('/:id/purchases', (req, reply) => controller.getPurchasesByCard(req, reply))
+  app.delete('/purchases/:id', (req, reply) => controller.deletePurchase(req, reply))
 
   // Invoices
   app.get('/:id/invoices', (req, reply) => controller.getInvoices(req, reply))

@@ -20,7 +20,11 @@ export class CalendarService {
 
     const [expenses, incomes, extras] = await Promise.all([
       prisma.expense.findMany({
-        where: { person: { familyId }, month, year, is_deleted: false },
+        // purchaseId: null — parcela de compra no cartão já nasce paga, mas o
+        // dinheiro só sai de verdade quando a fatura é paga. Sem esse filtro,
+        // o saldo do dia conta a mesma compra duas vezes (dia da compra e
+        // dia do vencimento da fatura).
+        where: { person: { familyId }, month, year, is_deleted: false, purchaseId: null },
         include: { category: true, recurring: true },
         orderBy: { date: 'asc' },
       }),

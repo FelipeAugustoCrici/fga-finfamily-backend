@@ -17,6 +17,10 @@ export class RecordsResumoRepository {
     const prevAno = mes === 1 ? ano - 1 : ano
 
     // Filtros base para despesas
+    // purchaseId: null — parcela de compra no cartão já nasce paga, mas o
+    // dinheiro só sai de verdade da conta quando a fatura é paga. Sem esse
+    // filtro, a mesma compra conta duas vezes (mês da compra + mês da
+    // fatura). Os totais usam só a fatura (agregada, sem purchaseId).
     const expenseWhere = {
       person: {
         familyId: familiaId,
@@ -25,6 +29,7 @@ export class RecordsResumoRepository {
       month: mes,
       year: ano,
       is_deleted: false,
+      purchaseId: null,
       ...(categoriaId ? { categoryId: categoriaId } : {}),
       ...(status ? { status } : {}),
     }
@@ -35,6 +40,7 @@ export class RecordsResumoRepository {
       month: prevMes,
       year: prevAno,
       is_deleted: false,
+      purchaseId: null,
       status: 'PAID',
     }
 

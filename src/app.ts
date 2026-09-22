@@ -80,5 +80,13 @@ app.setErrorHandler((error, _, reply) => {
     })
   }
 
+  // Regras de negócio dos services são lançadas como `new Error('mensagem em
+  // português para o usuário')` em todo o app (ex.: "Fatura já paga",
+  // "Limite de crédito insuficiente"). Sem isso, toda mensagem virava um
+  // 500 genérico e o frontend não tinha como mostrar o motivo real.
+  if (error instanceof Error && !(error as any).code) {
+    return reply.status(400).send({ message: error.message })
+  }
+
   return reply.status(500).send({ message: 'Internal server error' })
 })

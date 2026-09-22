@@ -38,7 +38,8 @@ export class CreditCardsController {
 
   // Purchases
   async createPurchase(req: FastifyRequest, reply: FastifyReply) {
-    const result = await this.service.createPurchase(req.body as CreatePurchaseInput)
+    const userId = req.user.sub
+    const result = await this.service.createPurchase(req.body as CreatePurchaseInput, userId)
     return reply.status(201).send(result)
   }
 
@@ -46,6 +47,13 @@ export class CreditCardsController {
     const { id } = req.params as { id: string }
     const result = await this.service.getPurchasesByCard(id)
     return reply.send(result)
+  }
+
+  async deletePurchase(req: FastifyRequest, reply: FastifyReply) {
+    const userId = req.user.sub
+    const { id } = req.params as { id: string }
+    await this.service.deletePurchase(id, userId)
+    return reply.status(204).send()
   }
 
   // Invoices

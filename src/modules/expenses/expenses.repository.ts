@@ -55,14 +55,14 @@ export class ExpensesRepository {
   async updateExpense(
     id: string,
     data: {
-      description: string
-      value: number
-      categoryName: string
+      description?: string
+      value?: number
+      categoryName?: string
       categoryId?: string
-      date: Date
-      month: number
-      year: number
-      personId: string
+      date?: Date
+      month?: number
+      year?: number
+      personId?: string
       status?: string
       recurringId?: string
       isShared?: boolean
@@ -225,6 +225,11 @@ export class ExpensesRepository {
         month,
         year,
         is_deleted: false,
+        // Parcela de compra no cartão (purchaseId) já nasce paga, mas o
+        // dinheiro só sai de verdade da conta quando a fatura é paga — sem
+        // esse filtro, a mesma compra conta duas vezes (uma no mês da
+        // compra, outra no mês da fatura). Totais usam só a fatura.
+        purchaseId: null,
         ...(status && { status }),
       },
       include: {
